@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3007abb0a85c27e4eb0b7b74f95c62dd, type: 3}
+  m_Name: Ar
+  m_EditorClassIdentifier: 
+  _name: "\uC544\uB974\uACE4(Ar)"
+  _atomicNumber: 18
+  _relativeAtomicMass: 39.948
+  _radius: 188
+  _material: {fileID: 2100000, guid: 68dced01f5a6fc34e9c9956677520ab0, type: 2}

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3007abb0a85c27e4eb0b7b74f95c62dd, type: 3}
+  m_Name: N
+  m_EditorClassIdentifier: 
+  _name: "\uC9C8\uC18C(N)"
+  _atomicNumber: 7
+  _relativeAtomicMass: 14.007
+  _radius: 155
+  _material: {fileID: 2100000, guid: ec4ad59a94caebb4197a73c061bb2383, type: 2}

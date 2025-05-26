@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3007abb0a85c27e4eb0b7b74f95c62dd, type: 3}
+  m_Name: H
+  m_EditorClassIdentifier: 
+  _name: "\uC218\uC18C(H)"
+  _atomicNumber: 1
+  _relativeAtomicMass: 1.008
+  _radius: 120
+  _material: {fileID: 2100000, guid: c060a70889b6c954a8eacceeff6aed61, type: 2}

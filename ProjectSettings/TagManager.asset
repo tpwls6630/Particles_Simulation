@@ -12,17 +12,17 @@ TagManager:
   - Water
   - UI
   - Wall
-  - Particle_Collidable
-  - Particle_Uncollidable
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Particle_H
+  - Particle_He
+  - Particle_H2O
+  - Particle_N2
+  - Particle_O2
+  - Particle_Ar
+  - Particle_CO2
+  - Particle_Ne
+  - Particle_CH4
+  - Particle_H2
+  - Particle_O3
   - 
   - 
   - 
