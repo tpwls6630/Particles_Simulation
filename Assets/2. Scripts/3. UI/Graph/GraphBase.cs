@@ -35,5 +35,8 @@ public struct GraphParam
 
 public abstract class GraphBase : MonoBehaviour
 {
-    public abstract void Draw(List<float> xData, List<float> yData, GraphParam param);
+    public virtual void Draw(List<float> xData, List<float> yData, GraphParam param)
+    {
+
+    }
 }

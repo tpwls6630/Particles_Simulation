@@ -6,6 +6,7 @@ public class ParticleCreateManager : MonoBehaviour
     [SerializeField] private AmountSelector _amountSelector;
     [SerializeField] private ParticleCreateButton _particleCreateButton;
     [SerializeField] private ParticleDestroyButton _particleDestroyButton;
+    [SerializeField] private TemperatureInput _temperatureInput;
 
     private void Start()
     {
@@ -17,7 +18,7 @@ public class ParticleCreateManager : MonoBehaviour
     {
         ParticleInfo particleInfo = _particleCreateSelector.GetSelectedParticleInfo();
         int amount = _amountSelector.selectedAmount;
-        ParticleManager.Instance.CreateParticles(particleInfo, amount);
+        ParticleManager.Instance.CreateParticles(particleInfo, amount, _temperatureInput.Temperature);
     }
 
     private void DestroyParticle()

@@ -7,13 +7,17 @@ public class ParticleDestroyButton : MonoBehaviour
 {
     private Button _button;
 
-    private void Start()
+    private void Awake()
     {
         _button = GetComponent<Button>();
     }
 
     public void AddClickDelegate(Action onClick)
     {
+        if (_button == null)
+        {
+            _button = GetComponent<Button>();
+        }
         _button.onClick.AddListener(() => onClick());
     }
 }

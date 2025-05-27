@@ -21,13 +21,6 @@ public class Gravity : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        // 실시간 업데이트가 필요하다면 여기에 로직을 추가할 수 있지만,
-        // 현재 요구사항은 입력 완료 시에만 적용하는 것이므로 비워둡니다.
-    }
-
     // InputField 입력 완료 시 호출될 메서드
     void UpdateGravity(string inputText)
     {

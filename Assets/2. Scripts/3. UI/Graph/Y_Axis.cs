@@ -3,12 +3,6 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public enum Y_AxisType
-{
-    ParticleCount,
-    ProbabilityDensity
-}
-
 public class Y_Axis : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _label_text;
@@ -23,17 +17,6 @@ public class Y_Axis : MonoBehaviour
     private float _positionStep => _rectTransform.rect.height / _stepCount;
     private RectTransform _rectTransform;
     private List<GameObject> _stepLines;
-
-    private Y_AxisType _yAxisType = Y_AxisType.ParticleCount;
-
-    public void SetAxisType(Y_AxisType yAxisType)
-    {
-        _yAxisType = yAxisType;
-        string label = yAxisType.ToString();
-        label += "\n";
-        label += AxisUnit(yAxisType);
-        _label_text.text = label;
-    }
 
     public void SetMin(float min)
     {
@@ -88,19 +71,5 @@ public class Y_Axis : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
         _stepLines = new List<GameObject>();
     }
-
-    private string AxisUnit(Y_AxisType yAxisType)
-    {
-        switch (yAxisType)
-        {
-            case Y_AxisType.ParticleCount:
-                return "개";
-            case Y_AxisType.ProbabilityDensity:
-                return "확률";
-            default:
-                return "";
-        }
-    }
-
 
 }

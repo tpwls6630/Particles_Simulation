@@ -1,13 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.Linq; // LINQ를 사용하여 평균 계산 등을 간편하게 할 수 있습니다.
-using UnityEngine; // Debug.Log 등을 사용하기 위해 포함 (선택 사항)
+using System.Linq;
+using UnityEngine;
 
 public static class MaxwellBoltzmannAnalysis
 {
 
     private static double BoltzmannConstant => Constants.BoltzmannConstant;
     private static double AtomicMassUnitInKg => Constants.AtomicMassUnitInKg;
+
+    public static float InferRMSFromSpeeds(List<float> speeds)
+    {
+        float rms = 0;
+        foreach (float speed in speeds)
+        {
+            rms += speed * speed;
+        }
+        rms /= speeds.Count;
+        return Mathf.Sqrt(rms);
+    }
+
     /// <summary>
     /// 주어진 입자 속력 리스트와 입자 질량으로부터 온도를 추론합니다.
     /// 3차원 공간을 가정합니다.
@@ -19,13 +31,17 @@ public static class MaxwellBoltzmannAnalysis
     {
         if (speeds == null || speeds.Count == 0)
         {
-            Debug.LogError("Speed list cannot be null or empty.");
-            throw new ArgumentException("Speed list cannot be null or empty.", nameof(speeds));
+            return 0;
         }
         if (particleAtomicMass <= 0)
         {
             Debug.LogError("Particle mass must be positive.");
             throw new ArgumentOutOfRangeException(nameof(particleAtomicMass), "Particle mass must be positive.");
+        }
+        if (degreeOfFreedom <= 0)
+        {
+            Debug.LogError("Degree of freedom must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(degreeOfFreedom), "Degree of freedom must be positive.");
         }
 
         double particleMass = particleAtomicMass * AtomicMassUnitInKg;
@@ -41,7 +57,7 @@ public static class MaxwellBoltzmannAnalysis
 
         // 2. 온도 계산: T = m * <v^2> / (3 * k)
         //    3은 3차원 공간에서의 자유도 수
-        double temperature = (particleMass * meanSquareSpeed) / (degreeOfFreedom * BoltzmannConstant);
+        double temperature = (particleMass * meanSquareSpeed) / (3 * BoltzmannConstant);
 
         return (float)temperature; // 최종 결과는 float으로 반환
     }

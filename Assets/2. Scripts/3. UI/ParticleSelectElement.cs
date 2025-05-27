@@ -25,4 +25,9 @@ public class ParticleSelectElement : SelectElement
     {
         return _particleInfo;
     }
+
+    public void SetParticleCount(int count)
+    {
+        _textField.text = $"{_particleInfo.Name} : ({count})";
+    }
 }

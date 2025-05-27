@@ -1,19 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class Chart : MonoBehaviour
 {
-
-
-
     [Header("X축")]
     [SerializeField] private string _xAxisLabel;
     [SerializeField] private X_Axis _xAxis;
     [SerializeField] private int _xAxisCount;
+
     [Header("Y축")]
     [SerializeField] private string _yAxisLabel;
     [SerializeField] private Y_Axis _yAxis;
@@ -26,9 +25,6 @@ public class Chart : MonoBehaviour
     [SerializeField] private int _lineXAxisCount;
 
     private float _drawTime => GameManager.Instance.DrawTime;
-    private List<int> _bar_xValueCount;
-    private List<float> _bar_xData, _bar_yData;
-    private List<float> _line_xData, _line_yData;
 
     private BarGraph _barGraphTemplate;
     private LineGraph _lineGraphTemplate;
@@ -47,7 +43,10 @@ public class Chart : MonoBehaviour
         RectTransform rectTransform = GetComponent<RectTransform>();
         _graphParam.xAxisPositionRange = new Vector2(0, rectTransform.rect.width);
         _graphParam.yAxisPositionRange = new Vector2(0, rectTransform.rect.height);
+
         SetGraphParam();
+
+        InitializeGraphs();
     }
 
     private void SetGraphParam()
@@ -65,8 +64,22 @@ public class Chart : MonoBehaviour
 
     private bool AdjustGraphView(float xMax, float yMax)
     {
+        if (float.IsNaN(xMax) || float.IsNaN(yMax))
+        {
+            return false;
+        }
+        if (xMax == 0)
+        {
+            xMax = 1;
+        }
+        if (yMax == 0)
+        {
+            yMax = 1;
+        }
+
         if (xMax > _graphParam.xAxisValueRange.y || Mathf.Abs(xMax - _graphParam.xAxisValueRange.y) / _graphParam.xAxisValueRange.y > 0.25f)
         {
+            print($"그래프 파라미터 변경 : ({_graphParam.xAxisValueRange.x}, {_graphParam.xAxisValueRange.y}) -> ({_graphParam.xAxisValueRange.x}, {xMax})");
             _graphParam.xAxisValueRange = new Vector2(_graphParam.xAxisValueRange.x, xMax);
             _xAxis.SetMax(_graphParam.xAxisValueRange.y);
             _xAxis.InitializeAxis();
@@ -75,6 +88,7 @@ public class Chart : MonoBehaviour
 
         if (yMax > _graphParam.yAxisValueRange.y || Mathf.Abs(yMax - _graphParam.yAxisValueRange.y) / _graphParam.yAxisValueRange.y > 0.25f)
         {
+            print($"그래프 파라미터 변경 : ({_graphParam.yAxisValueRange.x}, {_graphParam.yAxisValueRange.y}) -> ({_graphParam.yAxisValueRange.x}, {yMax})");
             _graphParam.yAxisValueRange = new Vector2(_graphParam.yAxisValueRange.x, yMax);
             _yAxis.SetMax(_graphParam.yAxisValueRange.y);
             _yAxis.InitializeAxis();
@@ -83,153 +97,145 @@ public class Chart : MonoBehaviour
         return false;
     }
 
+    private void InitializeGraphs()
+    {
+        foreach (var particleInfo in ParticleManager.Instance.ParticleInfos)
+        {
+            BarGraph barGraph = Instantiate(_barGraphTemplate, _barGraphGroup.transform);
+            barGraph.gameObject.SetActive(true);
+            barGraph.SetParticleInfo(particleInfo);
+            _barGraphs.Add(particleInfo, barGraph);
+
+            LineGraph lineGraph = Instantiate(_lineGraphTemplate, _lineGraphGroup.transform);
+            lineGraph.gameObject.SetActive(true);
+            lineGraph.SetParticleInfo(particleInfo);
+            _lineGraphs.Add(particleInfo, lineGraph);
+        }
+    }
+
+    public void SetParticleView(ParticleInfo particleInfo, bool isVisible)
+    {
+        if (isVisible)
+        {
+            if (_barGraphs.ContainsKey(particleInfo))
+            {
+                _barGraphs[particleInfo].gameObject.SetActive(true);
+            }
+
+            if (_lineGraphs.ContainsKey(particleInfo))
+            {
+                _lineGraphs[particleInfo].gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            if (_barGraphs.ContainsKey(particleInfo))
+            {
+                _barGraphs[particleInfo].gameObject.SetActive(false);
+            }
+
+            if (_lineGraphs.ContainsKey(particleInfo))
+            {
+                _lineGraphs[particleInfo].gameObject.SetActive(false);
+            }
+        }
+    }
+
     public void UpdateGraph(Dictionary<ParticleInfo, List<float>> data)
     {
+        float xMaxCon = 0;
+        float yMaxCon = 0;
         foreach (var particle in data)
         {
-            if (particle.Value.Count == 0)
+            ParticleInfo particleInfo = particle.Key;
+
+            if (_barGraphs[particleInfo].enabled == false)
                 continue;
 
-            ParticleInfo particleInfo = particle.Key;
-            if (!_barGraphs.ContainsKey(particleInfo))
-            {
-                BarGraph barGraph = Instantiate(_barGraphTemplate, _barGraphGroup.transform);
-                barGraph.gameObject.SetActive(true);
-                _barGraphs.Add(particleInfo, barGraph);
-            }
+            DrawBarGraph(particleInfo, particle.Value, out float xMax, out float yMax);
+            DrawLineGraph(particleInfo, particle.Value);
 
-            if (!_lineGraphs.ContainsKey(particleInfo))
-            {
-                LineGraph lineGraph = Instantiate(_lineGraphTemplate, _lineGraphGroup.transform);
-                lineGraph.gameObject.SetActive(true);
-                _lineGraphs.Add(particleInfo, lineGraph);
-            }
-
-            StartCoroutine(DrawBarGraph(particleInfo, particle.Value));
-            StartCoroutine(DrawLineGraph(particleInfo, particle.Value));
+            if (xMax > xMaxCon) xMaxCon = xMax;
+            if (yMax > yMaxCon) yMaxCon = yMax;
         }
+
+        AdjustGraphView(xMaxCon, yMaxCon);
     }
 
-    private IEnumerator DrawBarGraph(ParticleInfo particleInfo, List<float> data)
+
+    private void DrawBarGraph(ParticleInfo particleInfo, List<float> data, out float xMax, out float yMax)
     {
+        BarGraph targetBarGraph = _barGraphs[particleInfo];
+        xMax = 0;
+        yMax = 0;
 
-        float xMax = 0;
-        float yMax = 0;
-
-
-        int batchCount = (int)(_drawTime / Time.deltaTime);
-        int batchSize = data.Count / batchCount;
-
-        // 입자 개수 카운트를 위한 리스트 초기화
-        if (_bar_xValueCount == null || _bar_xValueCount.Count != _xAxisCount)
-        {
-            _bar_xValueCount = new List<int>(_xAxisCount);
-            for (int i = 0; i < _xAxisCount; i++)
-            {
-                _bar_xValueCount.Add(0);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < _xAxisCount; i++)
-            {
-                _bar_xValueCount[i] = 0;
-            }
-        }
-
+        Dictionary<float, int> valueCounts = new Dictionary<float, int>();
         float xStep = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _xAxisCount;
-        // 구간별 입자 개수 카운트
-        for (int i = 0; i < batchCount; i++)
-        {
-            for (int j = 0; j < batchSize; j++)
-            {
-                int index = i * batchSize + j;
-                if (index >= data.Count) break;
 
-                int xValue = Mathf.FloorToInt(data[index] / xStep);
-                if (xValue >= _xAxisCount)
-                {
-                    xValue = _xAxisCount - 1;
-                }
 
-                _bar_xValueCount[xValue]++;
-                if (data[index] > xMax) xMax = data[index];
-            }
-            yield return null;
-        }
-
-        // 최대 입자 개수 찾기
         for (int i = 0; i < _xAxisCount; i++)
         {
-            if (_bar_xValueCount[i] > yMax) yMax = _bar_xValueCount[i];
+            valueCounts.Add(i * xStep, 0);
         }
 
-        bool graphViewAdjusted = AdjustGraphView(xMax, yMax);
-        xStep = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _xAxisCount;
-
-        // x좌표용 xData 초기화
-        if (_bar_xData == null || _bar_xData.Count != _xAxisCount)
+        foreach (float value in data)
         {
-            _bar_xData = new List<float>(_xAxisCount);
-            for (int i = 0; i < _xAxisCount; i++)
+            if (value > xMax) xMax = value;
+
+            int bucketIndex = Mathf.FloorToInt(value / xStep);
+            if (bucketIndex >= _xAxisCount)
             {
-                _bar_xData.Add(i * xStep);
+                bucketIndex = _xAxisCount - 1;
             }
+            if (bucketIndex < 0)
+            {
+                bucketIndex = 0;
+            }
+            float bucketStartValue = bucketIndex * xStep;
+            valueCounts[bucketStartValue]++;
         }
-        else
+
+        List<float> xData = new List<float>();
+        List<float> yData = new List<float>();
+
+        foreach (var pair in valueCounts.OrderBy(p => p.Key))
         {
-            for (int i = 0; i < _xAxisCount; i++)
-            {
-                _bar_xData[i] = i * xStep;
-            }
-
+            xData.Add(pair.Key);
+            yData.Add(pair.Value);
+            if (pair.Value > yMax) yMax = pair.Value;
         }
 
-
-
-        // y좌표용 yData 초기화
-        if (_bar_yData == null || _bar_yData.Count != _xAxisCount)
-        {
-            _bar_yData = new List<float>(_xAxisCount);
-            for (int i = 0; i < _xAxisCount; i++)
-            {
-                _bar_yData.Add(_bar_xValueCount[i]);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < _xAxisCount; i++)
-            {
-                _bar_yData[i] = _bar_xValueCount[i];
-            }
-        }
-
-        _barGraphs[particleInfo].Draw(_bar_xData, _bar_yData, _graphParam);
+        targetBarGraph.Draw(xData, yData, _graphParam);
     }
 
-    private IEnumerator DrawLineGraph(ParticleInfo particleInfo, List<float> data)
+
+    private void DrawLineGraph(ParticleInfo particleInfo, List<float> data)
     {
 
-        float temperature = MaxwellBoltzmannAnalysis.InferTemperatureFromSpeeds(data, particleInfo.RelativeAtomicMass);
+        float xStep = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _lineXAxisCount;
+        List<float> _line_xData = new List<float>(_lineXAxisCount);
+        List<float> _line_yData = new List<float>(_lineXAxisCount);
+
+
+        for (int i = 0; i < _lineXAxisCount; i++)
+        {
+            _line_xData.Add(i * xStep);
+            _line_yData.Add(0);
+        }
+
+        if (data.Count == 0)
+        {
+            _lineGraphs[particleInfo].Draw(_line_xData, _line_yData, _graphParam);
+            return;
+        }
+
+        float rms = MaxwellBoltzmannAnalysis.InferRMSFromSpeeds(data);
+
+        float temperature = MaxwellBoltzmannAnalysis.InferTemperatureFromSpeeds(data, particleInfo.RelativeAtomicMass, particleInfo.DegreeOfFreedom);
 
         Func<double, double> particleDensityFunction = MaxwellBoltzmannAnalysis.MaxwellBoltzmannParticleDensityFunction(data.Count, temperature, particleInfo.RelativeAtomicMass);
 
-        float xStep = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _lineXAxisCount;
-        if (_line_xData == null || _line_xData.Count != _lineXAxisCount)
-        {
-            _line_xData = new List<float>(_lineXAxisCount);
-            for (int i = 0; i < _lineXAxisCount; i++)
-            {
-                _line_xData.Add(i * xStep);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < _lineXAxisCount; i++)
-            {
-                _line_xData[i] = i * xStep;
-            }
-        }
+
 
         if (_line_yData == null || _line_yData.Count != _lineXAxisCount)
         {
@@ -243,11 +249,19 @@ public class Chart : MonoBehaviour
         float step = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _lineXAxisCount;
         for (int i = 0; i < _lineXAxisCount; i++)
         {
-            _line_yData[i] = (float)MaxwellBoltzmannAnalysis.IntegratePaticleDensity(particleDensityFunction, _line_xData[i], _line_xData[i] + step);
+            float integral = (float)MaxwellBoltzmannAnalysis.IntegratePaticleDensity(particleDensityFunction, _line_xData[i], _line_xData[i] + step);
+            if (float.IsNaN(integral))
+            {
+                _line_yData[i] = 0;
+            }
+            else
+            {
+                _line_yData[i] = integral;
+            }
         }
 
-        _lineGraphs[particleInfo].Draw(_line_xData, _line_yData, _graphParam);
-        yield return null;
+        _lineGraphs[particleInfo].Draw(_line_xData, _line_yData, rms, _graphParam);
+
     }
 
 }

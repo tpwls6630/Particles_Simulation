@@ -5,7 +5,7 @@ public class ParticleCreateSelector : MonoBehaviour
 {
     [SerializeField] private GameObject _elementGroup;
 
-    private List<ParticleSelectElement> _particleSelectElements;
+    private Dictionary<ParticleInfo, ParticleSelectElement> _particleSelectElements;
 
     private GameObject _selectElementTemplate;
 
@@ -30,13 +30,15 @@ public class ParticleCreateSelector : MonoBehaviour
         }
         _selectElementTemplate.SetActive(false);
 
-        _particleSelectElements = new List<ParticleSelectElement>();
+        _particleSelectElements = new Dictionary<ParticleInfo, ParticleSelectElement>();
 
         for (int i = 0; i < particleCount; i++)
         {
             int c = i;
+            ParticleInfo particleInfo = ParticleManager.Instance.ParticleInfos[i];
             ParticleSelectElement particleSelectElement = Instantiate(_selectElementTemplate, _elementGroup.transform).GetComponent<ParticleSelectElement>();
-            particleSelectElement.SetParticleInfo(ParticleManager.Instance.ParticleInfos[i]);
+            particleSelectElement.SetParticleInfo(particleInfo);
+            particleSelectElement.SetParticleCount(0);
             particleSelectElement.AddClickDelegate(() =>
             {
                 _selectionDirtyBit = true;
@@ -45,9 +47,8 @@ public class ParticleCreateSelector : MonoBehaviour
 
             particleSelectElement.gameObject.SetActive(true);
 
-            _particleSelectElements.Add(particleSelectElement);
+            _particleSelectElements.Add(particleInfo, particleSelectElement);
         }
-
     }
 
     private void ApplySelection()
@@ -56,9 +57,11 @@ public class ParticleCreateSelector : MonoBehaviour
             return;
 
         print($"selectedParticleIndex: {_selectedParticleIndex}");
-        for (int i = 0; i < _particleSelectElements.Count; i++)
+        int index = 0;
+        foreach (var element in _particleSelectElements.Values)
         {
-            _particleSelectElements[i].selected = i == _selectedParticleIndex;
+            element.selected = index == _selectedParticleIndex;
+            index++;
         }
 
         _selectionDirtyBit = false;
@@ -72,5 +75,13 @@ public class ParticleCreateSelector : MonoBehaviour
     public ParticleInfo GetSelectedParticleInfo()
     {
         return ParticleManager.Instance.ParticleInfos[_selectedParticleIndex];
+    }
+
+    public void SetParticleCount(ParticleInfo particleInfo, int count)
+    {
+        if (_particleSelectElements.TryGetValue(particleInfo, out var element))
+        {
+            element.SetParticleCount(count);
+        }
     }
 }

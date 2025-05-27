@@ -15,6 +15,7 @@ public class ParticleManager : Singleton<ParticleManager>
     [SerializeField] private List<ParticleInspector> _particleInspectors;
     [SerializeField] private float _particleSpeed;
     [SerializeField] private float _initparticleCount;
+    [SerializeField] private ParticleCreateSelector _particleCreateSelector;
 
     private GameObject _particleGroup;
 
@@ -63,15 +64,16 @@ public class ParticleManager : Singleton<ParticleManager>
         }
     }
 
-    public void CreateParticles(ParticleInfo particleInfo, int count)
+    public void CreateParticles(ParticleInfo particleInfo, int count, float temperature)
     {
         for (int i = 0; i < count; i++)
         {
-            CreateParticle(particleInfo);
+            CreateParticle(particleInfo, temperature);
         }
+        UpdateParticleCount(particleInfo);
     }
 
-    public void CreateParticle(ParticleInfo particleInfo)
+    public void CreateParticle(ParticleInfo particleInfo, float temperature)
     {
         GameObject particle = Instantiate(
             _particlePrefabs[particleInfo],
@@ -81,7 +83,16 @@ public class ParticleManager : Singleton<ParticleManager>
 
         Particle particleComponent = particle.GetComponent<Particle>();
         particleComponent.SetParticleInfo(particleInfo);
-        particleComponent.SetVelocity(UnityEngine.Random.insideUnitSphere * _particleSpeed);
+
+        // 맥스웰-볼츠만 분포의 RMS 속도 계산
+        double mass = particleInfo.Mass; // kg 단위
+        double rmsSpeed = Math.Sqrt(3 * Constants.BoltzmannConstant * temperature / mass);
+
+        // 랜덤한 방향으로 RMS 속력 적용
+        Vector3 randomDirection = UnityEngine.Random.insideUnitSphere.normalized;
+        Vector3 initialVelocity = randomDirection * (float)rmsSpeed;
+        print(initialVelocity.magnitude);
+        particleComponent.SetVelocity(initialVelocity);
 
         _particleDict[particleInfo].Add(particleComponent);
 
@@ -99,6 +110,15 @@ public class ParticleManager : Singleton<ParticleManager>
             Particle particle = particles[particles.Count - 1];
             particles.RemoveAt(particles.Count - 1);
             Destroy(particle.gameObject);
+        }
+        UpdateParticleCount(particleInfo);
+    }
+
+    private void UpdateParticleCount(ParticleInfo particleInfo)
+    {
+        if (_particleCreateSelector != null)
+        {
+            _particleCreateSelector.SetParticleCount(particleInfo, _particleDict[particleInfo].Count);
         }
     }
 }

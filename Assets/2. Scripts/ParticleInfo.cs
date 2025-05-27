@@ -18,12 +18,18 @@ public class ParticleInfo : ScriptableObject
     [Header("원자 구성")]
     [SerializeField] private List<AtomComposition> _atomCompositions = new();
 
-    private float _relativeAtomicMass;
+    [Header("입자 색상")]
+    [SerializeField] private Color _color;
+
+    [SerializeField] private float _relativeAtomicMass;
+
+    [SerializeField] private int _degreeOfFreedom;
 
     public string Name => _name;
     public float RelativeAtomicMass => _relativeAtomicMass;
     public double Mass => _relativeAtomicMass * Constants.AtomicMassUnitInKg;
-
+    public Color Color => _color;
+    public int DegreeOfFreedom => _degreeOfFreedom;
     public Action<Particle> ExternalForce;
 
     private void OnValidate()

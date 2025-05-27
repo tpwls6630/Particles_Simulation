@@ -3,14 +3,6 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public enum X_AxisType
-{
-    Speed,
-    KineticEnergy,
-    PotentialEnergy,
-    MechanicalEnergy
-}
-
 public class X_Axis : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _label_text;
@@ -23,18 +15,6 @@ public class X_Axis : MonoBehaviour
     private float _positionStep => _rectTransform.rect.width / _stepCount;
     private RectTransform _rectTransform;
     private List<GameObject> _stepLines;
-
-    private X_AxisType _xAxisType = X_AxisType.Speed;
-
-
-    public void SetAxisType(X_AxisType xAxisType)
-    {
-        _xAxisType = xAxisType;
-        string label = xAxisType.ToString();
-        label += "\n";
-        label += AxisUnit(xAxisType);
-        _label_text.text = label;
-    }
 
     public void SetMin(float min)
     {
@@ -97,22 +77,5 @@ public class X_Axis : MonoBehaviour
     {
         _rectTransform = GetComponent<RectTransform>();
         _stepLines = new List<GameObject>();
-    }
-
-    private string AxisUnit(X_AxisType xAxisType)
-    {
-        switch (xAxisType)
-        {
-            case X_AxisType.Speed:
-                return "m/s";
-            case X_AxisType.KineticEnergy:
-                return "J";
-            case X_AxisType.PotentialEnergy:
-                return "J";
-            case X_AxisType.MechanicalEnergy:
-                return "J";
-            default:
-                return "";
-        }
     }
 }

@@ -18,3 +18,6 @@ MonoBehaviour:
     Count: 2
   - AtomInfo: {fileID: 11400000, guid: fbc13de8c34e26f42b8aab3df4e34e5f, type: 2}
     Count: 1
+  _color: {r: 0, g: 0.83998394, b: 1, a: 1}
+  _relativeAtomicMass: 18.015
+  _degreeOfFreedom: 6

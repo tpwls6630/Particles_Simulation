@@ -61,6 +61,7 @@ public class ParticleViewSelector : MonoBehaviour
         {
             ParticleInfo particleInfo = _particleSelectElements[i].GetParticleInfo();
             GameManager.Instance.BoxCamera.SetParticleView(particleInfo, selectedParticles[i]);
+            GameManager.Instance.Chart.SetParticleView(particleInfo, selectedParticles[i]);
         }
 
         _selectionDirtyBit = false;
