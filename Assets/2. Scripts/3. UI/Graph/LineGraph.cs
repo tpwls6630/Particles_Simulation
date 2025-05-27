@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI.Extensions;
 using TMPro;
 
-[RequireComponent(typeof(UILineRenderer))]
 public class LineGraph : GraphBase
 {
     public TextMeshProUGUI _temperatureText;
@@ -14,16 +13,14 @@ public class LineGraph : GraphBase
 
     private void Awake()
     {
-        _lineRenderer = GetComponent<UILineRenderer>();
+        _lineRenderer = transform.Find("LineRenderer").GetComponent<UILineRenderer>();
     }
 
     public void SetParticleInfo(ParticleInfo particleInfo)
     {
         _particleInfo = particleInfo;
         _lineRenderer.color = _particleInfo.Color;
-        _temperatureText.text = "0 K";
         _temperatureText.color = _particleInfo.Color;
-        _temperatureText.gameObject.SetActive(false);
     }
 
     public override void Draw(List<float> xData, List<float> yData, GraphParam param)

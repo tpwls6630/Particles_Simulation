@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Chart : MonoBehaviour
 {
@@ -149,9 +150,6 @@ public class Chart : MonoBehaviour
         {
             ParticleInfo particleInfo = particle.Key;
 
-            if (_barGraphs[particleInfo].enabled == false)
-                continue;
-
             DrawBarGraph(particleInfo, particle.Value, out float xMax, out float yMax);
             DrawLineGraph(particleInfo, particle.Value);
 
@@ -165,9 +163,11 @@ public class Chart : MonoBehaviour
 
     private void DrawBarGraph(ParticleInfo particleInfo, List<float> data, out float xMax, out float yMax)
     {
+
+
         BarGraph targetBarGraph = _barGraphs[particleInfo];
-        xMax = 0;
-        yMax = 0;
+        xMax = -1111;
+        yMax = -1111;
 
         Dictionary<float, int> valueCounts = new Dictionary<float, int>();
         float xStep = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _xAxisCount;
@@ -229,11 +229,11 @@ public class Chart : MonoBehaviour
             return;
         }
 
-        float rms = MaxwellBoltzmannAnalysis.InferRMSFromSpeeds(data);
+        float rms = MaxwellBoltzmannAnalysis.RMSFromSpeeds(data);
 
-        float temperature = MaxwellBoltzmannAnalysis.InferTemperatureFromSpeeds(data, particleInfo.RelativeAtomicMass, particleInfo.DegreeOfFreedom);
+        float temperature = MaxwellBoltzmannAnalysis.TemperatureFromSpeeds(rms, particleInfo.RelativeAtomicMass);
 
-        Func<double, double> particleDensityFunction = MaxwellBoltzmannAnalysis.MaxwellBoltzmannParticleDensityFunction(data.Count, temperature, particleInfo.RelativeAtomicMass);
+        Func<double, double> particleDensityFunction = MaxwellBoltzmannAnalysis.MB_DensityFuntion(data.Count, temperature, particleInfo.RelativeAtomicMass);
 
 
 
@@ -249,7 +249,7 @@ public class Chart : MonoBehaviour
         float step = (_graphParam.xAxisValueRange.y - _graphParam.xAxisValueRange.x) / _lineXAxisCount;
         for (int i = 0; i < _lineXAxisCount; i++)
         {
-            float integral = (float)MaxwellBoltzmannAnalysis.IntegratePaticleDensity(particleDensityFunction, _line_xData[i], _line_xData[i] + step);
+            float integral = (float)MaxwellBoltzmannAnalysis.IntegrateDensity(particleDensityFunction, _line_xData[i], _line_xData[i] + step);
             if (float.IsNaN(integral))
             {
                 _line_yData[i] = 0;

@@ -11,7 +11,8 @@ public class TemperatureAnalyzer : MonoBehaviour
         {
             ParticleInfo pInfo = particleItem.Key;
             List<float> speeds = particleItem.Value;
-            float temperature = MaxwellBoltzmannAnalysis.InferTemperatureFromSpeeds(speeds, pInfo.RelativeAtomicMass, pInfo.DegreeOfFreedom);
+            float rms = MaxwellBoltzmannAnalysis.RMSFromSpeeds(speeds);
+            float temperature = MaxwellBoltzmannAnalysis.TemperatureFromSpeeds(rms, pInfo.RelativeAtomicMass);
             temperatureData[pInfo] = temperature;
         }
     }

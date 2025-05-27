@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Maxwell_Boltzmann Distribution Educational Simulation.sln"
+    "dotnet.defaultSolution": "Particles_Simulation.sln"
 }

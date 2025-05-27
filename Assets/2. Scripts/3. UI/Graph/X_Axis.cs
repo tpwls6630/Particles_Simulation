@@ -68,7 +68,7 @@ public class X_Axis : MonoBehaviour
         for (int i = 0; i < _stepCount; i++)
         {
             _stepLines[i].GetComponent<RectTransform>().anchoredPosition = new Vector2((i + 1) * _positionStep, 0);
-            _stepLines[i].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = (_min + (i + 1) * _valueStep).ToString("F2");
+            _stepLines[i].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = (_min + (i + 1) * _valueStep).ToString("F0");
         }
 
     }
