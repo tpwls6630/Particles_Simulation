@@ -55,7 +55,15 @@ public class AmountSelector : MonoBehaviour
 
             amountSelectElement.SetActive(true);
         }
+
+        _inputField.onEndEdit.AddListener(OnEndEdit);
     }
 
-
+    private void OnEndEdit(string value)
+    {
+        if (int.TryParse(value, out int amount))
+        {
+            _selectedAmount = amount;
+        }
+    }
 }
